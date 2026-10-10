@@ -26,6 +26,32 @@ test.describe('Checkout', () => {
     await expect(checkoutPage.error).toContainText('First Name is required');
   });
 
+  test('last name is required', async ({ loggedIn, cartPage, checkoutPage }) => {
+    await loggedIn.addToCart('Sauce Labs Backpack');
+    await loggedIn.openCart();
+    await cartPage.checkout();
+    await checkoutPage.fillInfo(CUSTOMER.firstName, '', CUSTOMER.postalCode);
+    await expect(checkoutPage.error).toContainText('Last Name is required');
+  });
+
+  test('can correct missing information and complete checkout', async ({
+    loggedIn,
+    cartPage,
+    checkoutPage,
+  }) => {
+    await loggedIn.addToCart('Sauce Labs Backpack');
+    await loggedIn.openCart();
+    await cartPage.checkout();
+
+    await checkoutPage.fillInfo('', CUSTOMER.lastName, CUSTOMER.postalCode);
+    await expect(checkoutPage.error).toContainText('First Name is required');
+
+    await checkoutPage.fillInfo(CUSTOMER.firstName, CUSTOMER.lastName, CUSTOMER.postalCode);
+    await expect(checkoutPage.subtotal).toBeVisible();
+    await checkoutPage.finish();
+    await checkoutPage.expectComplete();
+  });
+
   test('postal code is required', async ({ loggedIn, cartPage, checkoutPage }) => {
     await loggedIn.addToCart('Sauce Labs Backpack');
     await loggedIn.openCart();
